@@ -5,8 +5,12 @@
     <Grid>
         <DockPanel>
             <Menu DockPanel.Dock="Top">
-                <MenuItem Header="_Plik">
+                <MenuItem Header="_Program">
                     <MenuItem Header="_Zakoncz"/>
+                </MenuItem>
+                <MenuItem Header="_Plik">
+                    <MenuItem Header="_Wczytaj" Click="wczytaj_btn_click"/>
+                    <MenuItem Header="_Zapisz" Click="zapisz_btn_click"/>
                 </MenuItem>
                 <MenuItem Header="_Serwer">
                     <MenuItem Header="_Połącz"/>
@@ -20,7 +24,9 @@
                     <MenuItem Header="_Aktualizus status"/>
                 </MenuItem>
             </Menu>
-            <StackPanel></StackPanel>
+            <StackPanel>
+                <TextBlock x:Name="TxtResult"></TextBlock>
+            </StackPanel>
         </DockPanel>
     </Grid>
 </Window>

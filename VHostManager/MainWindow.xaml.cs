@@ -16,6 +16,7 @@ namespace VHostManager
     {
         private IList<string> _ipAdresses;
         private IList<string> _restults;
+        private IList<string> _vHosts;
         private readonly LookupService _lService;
         private readonly LookupService _lServiceDomain;
 
@@ -46,8 +47,6 @@ namespace VHostManager
                     continue;
 
                 sb.Append("Adres IP: " + ip + ", kraj: " + location.countryName + domainTxt + "\n");
-               
-
             }
 
             var lines = sb.ToString().Split('\n');
@@ -123,6 +122,21 @@ namespace VHostManager
 
                 File.WriteAllText(saveFileDlg.FileName, sb.ToString());
             }
-        } 
+        }
+
+        private void dane_ip_btn_click(object sender, RoutedEventArgs e)
+        {
+            WebPageReader reader = new WebPageReader();
+            _vHosts = reader.findVirtualHostsByIp(_ipAdresses[0]);
+
+            var sb = new StringBuilder("");
+
+            foreach (string host in _vHosts)
+            {
+                sb.Append("VHost: " + host + "\n");
+            }
+
+            TxtResult.Text = TxtResult.Text + "\n" + sb.ToString();
+        }
     }
 }

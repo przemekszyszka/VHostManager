@@ -10,16 +10,8 @@
                     <MenuItem Header="_Wczytaj" Click="wczytaj_btn_click"/>
                     <MenuItem Header="_Zapisz" Click="zapisz_btn_click"/>
                 </MenuItem>
-                <MenuItem Header="_Serwer">
-                    <MenuItem Header="_Połącz"/>
-                    <MenuItem Header="_Konfiguruj połączenie"/>
-                    <MenuItem Header="_Konfiguruj zasoby"/>
-                    <MenuItem Header="_Wyświetl konsolę"/>
-                </MenuItem>
                 <MenuItem Header="_Padania">
-                    <MenuItem Header="_Rozpocznij Badania"/>
-                    <MenuItem Header="_Konfiguracja"/>
-                    <MenuItem Header="_Aktualizus status"/>
+                    <MenuItem Header="_Rozpocznij Badania" Click="dane_ip_btn_click"/>
                 </MenuItem>
             </Menu>
             <StackPanel>

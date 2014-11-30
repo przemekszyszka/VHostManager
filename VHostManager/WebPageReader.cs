@@ -11,10 +11,10 @@ namespace VHostManager
 {
     public class WebPageReader
     {
-        public string[] findVirtualHostsByIp(string ip)
+        public IList<string> findVirtualHostsByIp(string ip)
         {
             var html = getWebPage("http://api.hackertarget.com/reverseiplookup/?q=" + ip);
-            return splitByNewLines(html);
+            return splitByNewLines(html).ToList();
         }
 
         public string getWebPage(string address)

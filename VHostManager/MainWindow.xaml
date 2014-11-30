@@ -1,8 +1,26 @@
 ﻿<Window x:Class="VHostManager.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="350" Width="525">
+        Title="VHostManager" Height="350" Width="525">
     <Grid>
-        
+        <DockPanel>
+            <Menu DockPanel.Dock="Top">
+                <MenuItem Header="_Plik">
+                    <MenuItem Header="_Zakoncz"/>
+                </MenuItem>
+                <MenuItem Header="_Serwer">
+                    <MenuItem Header="_Połącz"/>
+                    <MenuItem Header="_Konfiguruj połączenie"/>
+                    <MenuItem Header="_Konfiguruj zasoby"/>
+                    <MenuItem Header="_Wyświetl konsolę"/>
+                </MenuItem>
+                <MenuItem Header="_Padania">
+                    <MenuItem Header="_Rozpocznij Badania"/>
+                    <MenuItem Header="_Konfiguracja"/>
+                    <MenuItem Header="_Aktualizus status"/>
+                </MenuItem>
+            </Menu>
+            <StackPanel></StackPanel>
+        </DockPanel>
     </Grid>
 </Window>

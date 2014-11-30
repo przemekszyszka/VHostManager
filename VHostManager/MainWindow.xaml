@@ -5,9 +5,6 @@
     <Grid>
         <DockPanel>
             <Menu DockPanel.Dock="Top">
-                <MenuItem Header="_Program">
-                    <MenuItem Header="_Zakoncz"/>
-                </MenuItem>
                 <MenuItem Header="_Plik">
                     <MenuItem Header="_Wczytaj" Click="wczytaj_btn_click"/>
                     <MenuItem Header="_Zapisz" Click="zapisz_btn_click"/>

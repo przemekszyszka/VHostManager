@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Text;
 using System.Windows;
@@ -18,11 +19,13 @@ namespace VHostManager
         private readonly LookupService _lService;
         private readonly LookupService _lServiceDomain;
 
+
         public MainWindow()
         {
             InitializeComponent();
-            _lService = new LookupService("/Users/Marcin/Documents/GitHub/VHostManager/VHostManager/GeoIPDatabase/GeoLiteCity.dat", LookupService.GEOIP_STANDARD);
-            _lServiceDomain = new LookupService("/Users/Marcin/Documents/GitHub/VHostManager/VHostManager/GeoIPDatabase/GeoIPDomain.dat", LookupService.GEOIP_STANDARD);
+            var projectPath = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory()));
+            _lService = new LookupService(projectPath + "/GeoIPDatabase/GeoLiteCity.dat", LookupService.GEOIP_STANDARD);
+            _lServiceDomain = new LookupService(projectPath + "/GeoIPDatabase/GeoIPDomain.dat", LookupService.GEOIP_STANDARD);
             _restults = new List<string>();
         }
 
@@ -38,6 +41,9 @@ namespace VHostManager
                 var location = _lService.getLocation(ip);
                 var domain = _lServiceDomain.getOrg(ip);
                 var domainTxt = domain != null ? ", Domena: " + domain : "";
+
+                if (location == null)
+                    continue;
 
                 sb.Append("Adres IP: " + ip + ", kraj: " + location.countryName + domainTxt + "\n");
                
@@ -58,7 +64,7 @@ namespace VHostManager
 
         private void wczytaj_btn_click(object sender, RoutedEventArgs e)
         {
-            var dlg = new Microsoft.Win32.OpenFileDialog {DefaultExt = ".txt", Filter = "TXT Files (*.txt)|*.txt"};
+            var dlg = new OpenFileDialog {DefaultExt = ".txt", Filter = "TXT Files (*.txt)|*.txt"};
 
             var result = dlg.ShowDialog();
 
@@ -94,11 +100,29 @@ namespace VHostManager
             ListCountries();
         }
 
+
         private void zapisz_btn_click(object sender, RoutedEventArgs e)
         {
+            var saveFileDlg = new SaveFileDialog
+            {
+                DefaultExt = ".txt",
+                Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*",
+                RestoreDirectory = true,
+                FileName = "result"
+            };
 
-        }
+           
+            if (saveFileDlg.ShowDialog() == true && saveFileDlg.FileName != "")
+            {
+                var sb = new StringBuilder("");
 
-       
+                foreach (var line in _restults)
+                {
+                    sb.Append(line + Environment.NewLine);
+                }
+
+                File.WriteAllText(saveFileDlg.FileName, sb.ToString());
+            }
+        } 
     }
 }

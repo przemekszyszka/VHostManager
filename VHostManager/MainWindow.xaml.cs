@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Windows;
 using MaxMind.GeoIP;
@@ -14,7 +14,7 @@ namespace VHostManager
     /// </summary>
     public partial class MainWindow : Window
     {
-        private IList<string> _ipAdresses;
+        private IList<Host> _testoweHosty; 
         private IList<string> _restults;
         private IList<string> _vHosts;
         private readonly LookupService _lService;
@@ -32,21 +32,17 @@ namespace VHostManager
 
         private void ListCountries()
         {
-            if (_ipAdresses.Count < 1)
+            
+            if (_testoweHosty.Count < 1)
                 return;
 
             var sb = new StringBuilder("");
 
-            foreach (var ip in _ipAdresses)
+            foreach (var host in _testoweHosty)
             {
-                var location = _lService.getLocation(ip);
-                var domain = _lServiceDomain.getOrg(ip);
-                var domainTxt = domain != null ? ", Domena: " + domain : "";
 
-                if (location == null)
-                    continue;
-
-                sb.Append("Adres IP: " + ip + ", kraj: " + location.countryName + domainTxt + "\n");
+                var domainTxt = host.DomainName != null ? ", Domena: " + host.DomainName : "";
+                sb.Append("Adres IP: " + host.AdresIp + ", kraj: " + host.Country + domainTxt + "\n");
             }
 
             var lines = sb.ToString().Split('\n');
@@ -72,7 +68,7 @@ namespace VHostManager
                 return;
            
             var filename = dlg.FileName;
-            _ipAdresses = new List<string>();
+            _testoweHosty = new List<Host>();
 
             try
             {
@@ -84,7 +80,12 @@ namespace VHostManager
                     for (var i = 0; i < lines.Length; i += 1)
                     {
                         lines[i] = lines[i].TrimEnd('\r');
-                        _ipAdresses.Add(lines[i]);
+                        _testoweHosty.Add(new Host() 
+                        { 
+                            AdresIp = lines[i], 
+                            DomainName = GetDomainName(lines[i]),
+                            Country = GetCountry(lines[i])
+                        });
                     }
                        
 
@@ -92,11 +93,24 @@ namespace VHostManager
             }
             catch (Exception ex)
             {
-                Console.WriteLine("The file could not be read:");
+                Console.WriteLine("Problem z odczytaniem pliku.");
                 Console.WriteLine(ex.Message);
             }
-
+            
             ListCountries();
+            if (_testoweHosty.Count > 0)
+                BadaniaMenuItem.IsEnabled = true;
+
+        }
+
+        private string GetDomainName(string adresIp)
+        {
+            return _lServiceDomain.getOrg(adresIp);
+        }
+
+        private string GetCountry(string adresIp)
+        {
+            return _lService.getLocation(adresIp).countryName;
         }
 
 
@@ -126,17 +140,77 @@ namespace VHostManager
 
         private void dane_ip_btn_click(object sender, RoutedEventArgs e)
         {
-            WebPageReader reader = new WebPageReader();
-            _vHosts = reader.findVirtualHostsByIp(_ipAdresses[0]);
+            var reader = new WebPageReader();
+
+            foreach (var host in _testoweHosty)
+            {
+                _vHosts = reader.findVirtualHostsByIp(host.AdresIp);
+                host.VirtualHosts = new List<Host>();
+                foreach (var vhost in _vHosts)
+                {
+                    
+                    host.VirtualHosts.Add(
+                        new Host()
+                        {
+                            AdresIp = host.AdresIp, 
+                            DomainName = vhost, 
+                            Country = host.Country
+                        
+                        }
+                    );
+                }
+            }
+           
+
+            //var sb = new StringBuilder("");
+
+            //foreach (var vhost in _vHosts)
+            //{
+            //    sb.Append("VHost: " + VisualBitmapScalingModehost + "\n");
+            //}
+
+            TxtResult.Text = TxtResult.Text + "\nBadanie skończone, można przejść do wyników";
+            WynikiMenuItem.IsEnabled = true;
+        }
+
+        private void skala_wirtualizacji_click(object sender, RoutedEventArgs e)
+        {
+            TxtResult.Text = "Średnia ilość adresów dns na jednego hosta:";
+
+        }
+
+        private void najwieksza_wirtualizacja_click(object sender, RoutedEventArgs e)
+        {
+            TxtResult.Text = "Hosty o najwiekszej wirtualizacji:\n\n\n";
 
             var sb = new StringBuilder("");
 
-            foreach (string host in _vHosts)
+            var najVirtHosts = _testoweHosty.OrderByDescending(x => x.VirtualHosts.Count).Take(3);
+            foreach (var host in najVirtHosts)
             {
-                sb.Append("VHost: " + host + "\n");
+                var domainTxt = host.DomainName != null ? ", Domena: " + host.DomainName : "";
+                sb.Append("Adres IP: " + host.AdresIp + domainTxt + "\n");
+                sb.Append("Liczba writualnych hostów: " + host.VirtualHosts.Count + "\n\n");
             }
 
-            TxtResult.Text = TxtResult.Text + "\n" + sb.ToString();
+            TxtResult.Text = TxtResult.Text + sb;
+        }
+
+        private void lista_wszystkich_click(object sender, RoutedEventArgs e)
+        {
+            TxtResult.Text = "Lista wszystkich znalezionych:\n\n\n";
+
+            var sb = new StringBuilder("");
+
+            foreach (var host in _testoweHosty)
+            {
+                var domainTxt = host.DomainName != null ? ", Domena: " + host.DomainName : "";
+                sb.Append("Adres IP: " + host.AdresIp + domainTxt + "\n");
+                sb.Append("Liczba writualnych hostów: " + host.VirtualHosts.Count + "\n\n");
+            }
+
+            TxtResult.Text = TxtResult.Text + sb;
+
         }
     }
 }

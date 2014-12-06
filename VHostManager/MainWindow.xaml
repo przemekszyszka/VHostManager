@@ -10,13 +10,53 @@
                     <MenuItem Header="_Wczytaj" Click="wczytaj_btn_click"/>
                     <MenuItem Header="_Zapisz" Click="zapisz_btn_click"/>
                 </MenuItem>
-                <MenuItem Header="_Padania">
+                <MenuItem x:Name="BadaniaMenuItem" Header="_Badania" IsEnabled="false">
                     <MenuItem Header="_Rozpocznij Badania" Click="dane_ip_btn_click"/>
                 </MenuItem>
+                <MenuItem x:Name="WynikiMenuItem"  Header="_Wyniki Badań" IsEnabled="false">
+                    <MenuItem Header="_Skala wirtualizacji" Click="skala_wirtualizacji_click"/>
+                    <MenuItem Header="_Hosty o najwiekszej wirtualizacji" Click="najwieksza_wirtualizacja_click"/>
+                    <MenuItem Header="_Lista wszystkich" Click="lista_wszystkich_click"/>
+                </MenuItem>
             </Menu>
-            <StackPanel>
-                <TextBlock x:Name="TxtResult"></TextBlock>
-            </StackPanel>
+            <ScrollViewer>
+                <StackPanel>
+                    <TextBlock x:Name="TxtResult"></TextBlock>
+                    <!--<Grid Height="921">
+                    <chartingToolkit:Chart  Height="200" HorizontalAlignment="Left" 
+		Margin="33,0,0,620" Name="columnChart" Title="Column Series Demo" 
+		VerticalAlignment="Center" Width="360">
+                        <chartingToolkit:ColumnSeries DependentValuePath="Value" 
+		IndependentValuePath="Key" ItemsSource="{Binding}" />
+                    </chartingToolkit:Chart>
+                    <chartingToolkit:Chart  Name="pieChart" Title="Pie Series Demo" 
+		VerticalAlignment="Top" Margin="449,39,43,0" Height="262">
+                        <chartingToolkit:PieSeries DependentValuePath="Value" 
+		IndependentValuePath="Key" ItemsSource="{Binding}" 
+		IsSelectionEnabled="True" />
+                    </chartingToolkit:Chart>
+                    <chartingToolkit:Chart  Name="areaChart" Title="Area Series Demo" 
+		VerticalAlignment="Top" Margin="33,330,440,0" Height="262">
+                        <chartingToolkit:AreaSeries DependentValuePath="Value" 
+		IndependentValuePath="Key" ItemsSource="{Binding}" 
+		IsSelectionEnabled="True"/>
+                    </chartingToolkit:Chart>
+                    <chartingToolkit:Chart  Name="barChart" Title="Bar Series Demo" 
+		VerticalAlignment="Top" Margin="449,330,43,0" Height="262">
+                        <chartingToolkit:BarSeries  DependentValuePath="Value" 
+		IndependentValuePath="Key" ItemsSource="{Binding}" 
+		IsSelectionEnabled="True"/>
+                    </chartingToolkit:Chart>
+                    <chartingToolkit:Chart  Name="lineChart" Title="Line Series Demo" 
+		VerticalAlignment="Top" Margin="33,611,440,0" Height="254">
+                        <chartingToolkit:LineSeries  DependentValuePath="Value" 
+		IndependentValuePath="Key" ItemsSource="{Binding}" 
+		IsSelectionEnabled="True"/>
+                    </chartingToolkit:Chart>
+                </Grid>-->
+                </StackPanel>
+            </ScrollViewer>
+          
         </DockPanel>
     </Grid>
 </Window>

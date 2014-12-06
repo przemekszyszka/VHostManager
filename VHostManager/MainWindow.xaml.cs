@@ -140,6 +140,15 @@ namespace VHostManager
 
         private void dane_ip_btn_click(object sender, RoutedEventArgs e)
         {
+            readFromFirstWebsite();
+            readFromSecondWebsite();
+            
+            TxtResult.Text = TxtResult.Text + "\nBadanie skończone, można przejść do wyników";
+            WynikiMenuItem.IsEnabled = true;
+        }
+
+        private void readFromFirstWebsite()
+        {
             var reader = new WebPageReader();
 
             foreach (var host in _testoweHosty)
@@ -148,21 +157,39 @@ namespace VHostManager
                 host.VirtualHosts = new List<Host>();
                 foreach (var vhost in _vHosts)
                 {
-                    
                     host.VirtualHosts.Add(
                         new Host()
                         {
-                            AdresIp = host.AdresIp, 
-                            DomainName = vhost, 
+                            AdresIp = host.AdresIp,
+                            DomainName = vhost,
                             Country = host.Country
-                        
+
                         }
                     );
                 }
             }
+        }
 
-            TxtResult.Text = TxtResult.Text + "\nBadanie skończone, można przejść do wyników";
-            WynikiMenuItem.IsEnabled = true;
+        private void readFromSecondWebsite()
+        {
+            var reader = new WebPageReader();
+
+            foreach (var host in _testoweHosty)
+            {
+                _vHosts = reader.findOtherVirtualHostsByIp(host.AdresIp);
+                host.VirtualHosts = new List<Host>();
+                foreach (var vhost in _vHosts)
+                {
+                    host.VirtualHosts.Add(
+                        new Host()
+                        {
+                            AdresIp = host.AdresIp,
+                            DomainName = vhost,
+                            Country = host.Country
+                        }
+                    );
+                }
+            }
         }
 
         private void skala_wirtualizacji_click(object sender, RoutedEventArgs e)

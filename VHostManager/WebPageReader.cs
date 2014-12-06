@@ -17,6 +17,20 @@ namespace VHostManager
             return splitByNewLines(html).ToList();
         }
 
+        public IList<string> findOtherVirtualHostsByIp(string ip)
+        {
+            var ints = ip.Split('.');
+
+            System.Net.WebClient client = new System.Net.WebClient();
+
+            var html = getWebPage("https://www.robtex.com/en/advisory/ip/" + ints[0] + "/" + ints[1] + "/" + ints[2] + "/" + ints[3] + "/shared.html");
+            
+            
+            var names = getDataByTagWithAttribute(html, "ol", "class", "xbul");
+
+            return names;
+        }
+
         public string getWebPage(string address)
         {
             string responseText;
@@ -33,7 +47,7 @@ namespace VHostManager
             return responseText;
         }
 
-        public string getDataByTagWithAttribute(string html, string tag, string attribute, string value)
+        public IList<string> getDataByTagWithAttribute(string html, string tag, string attribute, string value)
         {
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(html);
@@ -45,8 +59,15 @@ namespace VHostManager
             {
                 findClasses = findClasses.Where(d => d.Attributes.Contains(attribute) && d.Attributes["class"].Value.Contains(value));
             }
+
+            string innerHTML = findClasses.ElementAt(1).InnerHtml;
+            doc.LoadHtml(innerHTML);
+            findClasses = doc.DocumentNode.Descendants("code");
             
-            return findClasses.FirstOrDefault().InnerHtml.ToString();
+            IList<string> elements = new List<string>();
+            findClasses.ToList().ForEach(x => elements.Add(x.InnerText));
+
+            return elements;
         }
 
         public string[] splitByChar(string toSplit, char[] spliter)

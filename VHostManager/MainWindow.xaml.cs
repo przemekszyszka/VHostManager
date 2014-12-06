@@ -160,14 +160,6 @@ namespace VHostManager
                     );
                 }
             }
-           
-
-            //var sb = new StringBuilder("");
-
-            //foreach (var vhost in _vHosts)
-            //{
-            //    sb.Append("VHost: " + VisualBitmapScalingModehost + "\n");
-            //}
 
             TxtResult.Text = TxtResult.Text + "\nBadanie skończone, można przejść do wyników";
             WynikiMenuItem.IsEnabled = true;
@@ -175,7 +167,12 @@ namespace VHostManager
 
         private void skala_wirtualizacji_click(object sender, RoutedEventArgs e)
         {
-            TxtResult.Text = "Średnia ilość adresów dns na jednego hosta:";
+            TxtResult.Text = "Średnia ilość adresów dns na jednego hosta: ";
+
+            var liczbaVhostow = _testoweHosty.Select(host => host.VirtualHosts.Count).ToList();
+            var result = liczbaVhostow.AsEnumerable().Average(o => o);
+
+            TxtResult.Text = TxtResult.Text + result;
 
         }
 
@@ -186,14 +183,17 @@ namespace VHostManager
             var sb = new StringBuilder("");
 
             var najVirtHosts = _testoweHosty.OrderByDescending(x => x.VirtualHosts.Count).Take(3);
+            var valueList = new List<KeyValuePair<string, int>>();
             foreach (var host in najVirtHosts)
             {
                 var domainTxt = host.DomainName != null ? ", Domena: " + host.DomainName : "";
                 sb.Append("Adres IP: " + host.AdresIp + domainTxt + "\n");
                 sb.Append("Liczba writualnych hostów: " + host.VirtualHosts.Count + "\n\n");
+                valueList.Add(new KeyValuePair<string, int>(host.DomainName, host.VirtualHosts.Count));
             }
 
             TxtResult.Text = TxtResult.Text + sb;
+            ShowColumnChart(valueList, "Hosty o najwiekszej wirtualizacji", "Liczba vhostów");
         }
 
         private void lista_wszystkich_click(object sender, RoutedEventArgs e)
@@ -201,16 +201,33 @@ namespace VHostManager
             TxtResult.Text = "Lista wszystkich znalezionych:\n\n\n";
 
             var sb = new StringBuilder("");
-
+            var valueList = new List<KeyValuePair<string, int>>();
             foreach (var host in _testoweHosty)
             {
                 var domainTxt = host.DomainName != null ? ", Domena: " + host.DomainName : "";
                 sb.Append("Adres IP: " + host.AdresIp + domainTxt + "\n");
                 sb.Append("Liczba writualnych hostów: " + host.VirtualHosts.Count + "\n\n");
+                valueList.Add(new KeyValuePair<string, int>(host.DomainName, host.VirtualHosts.Count));
             }
 
             TxtResult.Text = TxtResult.Text + sb;
+            ShowPieChart(valueList, "Znalezione wirtualne hosty", "Liczba vhostów");
+        }
 
+        private void ShowColumnChart(List<KeyValuePair<string, int>> valueList, string chartTitle, string columnSeriesTitle)
+        {
+            ColumnChart.DataContext = valueList;
+            ColumnChart.Title = chartTitle;
+            ColumnSeries.Title = columnSeriesTitle;
+            ColumnChart.Visibility = Visibility.Visible;
+        }
+
+        private void ShowPieChart(List<KeyValuePair<string, int>> valueList, string chartTitle, string columnSeriesTitle)
+        {
+            PieChart.DataContext = valueList;
+            PieChart.Title = chartTitle;
+            PieSeries.Title = columnSeriesTitle;
+            PieChart.Visibility = Visibility.Visible; 
         }
     }
 }

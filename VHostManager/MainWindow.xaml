@@ -4,11 +4,11 @@
         xmlns:chartingToolkit="clr-namespace:System.Windows.Controls.DataVisualization.Charting;assembly=System.Windows.Controls.DataVisualization.Toolkit"
         Title="VHostManager" Height="350" Width="525">
     <Grid>
+        
         <DockPanel>
             <Menu DockPanel.Dock="Top">
                 <MenuItem Header="_Plik">
-                    <MenuItem Header="_Wczytaj" Click="wczytaj_btn_click"/>
-                    <MenuItem Header="_Zapisz" Click="zapisz_btn_click"/>
+                    <MenuItem Header="_Wczytaj Plik" Click="wczytaj_btn_click"/>
                 </MenuItem>
                 <MenuItem x:Name="BadaniaMenuItem" Header="_Badania" IsEnabled="false">
                     <MenuItem Header="_Rozpocznij Badania" Click="dane_ip_btn_click"/>
@@ -17,43 +17,81 @@
                     <MenuItem Header="_Skala wirtualizacji" Click="skala_wirtualizacji_click"/>
                     <MenuItem Header="_Hosty o najwiekszej wirtualizacji" Click="najwieksza_wirtualizacja_click"/>
                     <MenuItem Header="_Lista wszystkich" Click="lista_wszystkich_click"/>
+                    <MenuItem Header="_Rozlożenie Geograficzne" Click="rozlozenie_geo_click"/>
                 </MenuItem>
             </Menu>
             <ScrollViewer>
                 <StackPanel>
                     <TextBlock x:Name="TxtResult"></TextBlock>
                     <Grid>
-                    <chartingToolkit:Chart 
-                        x:Name="ColumnChart" 
+                        <TextBlock Visibility="Collapsed" Margin="0,75,0,0" HorizontalAlignment="Center" x:Name="ProgressTxt"></TextBlock>
+                        <ProgressBar Visibility="Collapsed" Margin="0,100,0,0" Width="400" VerticalAlignment="Center" x:Name="ProgressBar" Minimum="0" Maximum="100"/>
+                      
+                        
+                        <StackPanel>
+                            <chartingToolkit:Chart 
+                        x:Name="ColumnChart1" 
                         Visibility="Collapsed" 
                         Height="200" 
-                        HorizontalAlignment="Left" 
-		                Margin="33,0,0,620" 
+                        HorizontalAlignment="Center" 
+		                Margin="0,0,0,20" 
 		                VerticalAlignment="Top" 
                         Width="450">
-                        
-                        <chartingToolkit:ColumnSeries x:Name="ColumnSeries" 
+
+                                <chartingToolkit:ColumnSeries x:Name="ColumnSeries1" 
                             DependentValuePath="Value" 
 		                    IndependentValuePath="Key" 
                             ItemsSource="{Binding}"/>
-                    </chartingToolkit:Chart>
-                        
-                        
-                    <chartingToolkit:Chart  
-                        Name="PieChart" 
+                            </chartingToolkit:Chart>
+
+                            <chartingToolkit:Chart 
+                        x:Name="ColumnChart2" 
+                        Visibility="Collapsed" 
+                        Height="200" 
+                        HorizontalAlignment="Center" 
+		                VerticalAlignment="Top" 
+                        Width="450">
+
+                                <chartingToolkit:ColumnSeries x:Name="ColumnSeries2" 
+                            DependentValuePath="Value" 
+		                    IndependentValuePath="Key" 
+                            ItemsSource="{Binding}"/>
+                            </chartingToolkit:Chart>
+
+                        </StackPanel>
+                    
+                        <StackPanel>
+                            <chartingToolkit:Chart  
+                        Name="PieChart1" 
 		                VerticalAlignment="Top" 
                         Visibility="Collapsed" 
-                        Margin="33,0,0,620" 
+                        Margin="0,0,0,20"
                         Height="262" >
-                        
-                        <chartingToolkit:PieSeries 
-                            Name="PieSeries"
+
+                                <chartingToolkit:PieSeries 
+                            Name="PieSeries1"
                             DependentValuePath="Value" 
 		                    IndependentValuePath="Key" ItemsSource="{Binding}" 
 		                    IsSelectionEnabled="True" />
-                    </chartingToolkit:Chart>
-                    
-                </Grid>
+                            </chartingToolkit:Chart>
+
+                            <chartingToolkit:Chart  
+                        Name="PieChart2" 
+		                VerticalAlignment="Top" 
+                        Visibility="Collapsed" 
+                       
+                        Height="262" >
+
+                                <chartingToolkit:PieSeries 
+                            Name="PieSeries2"
+                            DependentValuePath="Value" 
+		                    IndependentValuePath="Key" ItemsSource="{Binding}" 
+		                    IsSelectionEnabled="True" />
+                            </chartingToolkit:Chart>
+                        </StackPanel>
+                        
+
+                    </Grid>
                 </StackPanel>
             </ScrollViewer>
           

@@ -5,51 +5,63 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace VHostManager
 {
     public class WebPageReader
     {
-        public IList<string> findVirtualHostsByIp(string ip)
+        public IList<string> FindVirtualHostsByIp(string ip)
         {
-            var html = getWebPage("http://api.hackertarget.com/reverseiplookup/?q=" + ip);
-            return splitByNewLines(html).ToList();
+            var html = GetWebPage("http://api.hackertarget.com/reverseiplookup/?q=" + ip);
+            return SplitByNewLines(html).ToList();
         }
 
-        public IList<string> findOtherVirtualHostsByIp(string ip)
+        public IList<string> FindOtherVirtualHostsByIp(string ip)
         {
             var ints = ip.Split('.');
 
-            System.Net.WebClient client = new System.Net.WebClient();
+            WebClient client = new WebClient();
 
-            var html = getWebPage("https://www.robtex.com/en/advisory/ip/" + ints[0] + "/" + ints[1] + "/" + ints[2] + "/" + ints[3] + "/shared.html");
-            
-            
-            var names = getDataByTagWithAttribute(html, "ol", "class", "xbul");
+            var html = GetWebPage("https://www.robtex.com/en/advisory/ip/" + ints[0] + "/" + ints[1] + "/" + ints[2] + "/" + ints[3] + "/shared.html");
+
+            if (string.IsNullOrEmpty(html))
+                return new List<string>();
+
+            var names = GetDataByTagWithAttribute(html, "ol", "class", "xbul");
 
             return names;
         }
 
-        public string getWebPage(string address)
+        public string GetWebPage(string address)
         {
             string responseText;
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(address);
 
-            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+            try
             {
-                using (StreamReader responseStream = new StreamReader(response.GetResponseStream(), Encoding.GetEncoding("utf-8")))
+                var request = (HttpWebRequest) WebRequest.Create(address);
+
+                using (var response = (HttpWebResponse) request.GetResponse())
                 {
-                    responseText = responseStream.ReadToEnd();
+                    using (
+                        var responseStream = new StreamReader(response.GetResponseStream(),
+                            Encoding.GetEncoding("utf-8")))
+                    {
+                        responseText = responseStream.ReadToEnd();
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                responseText = string.Empty;
+            }
+            
 
             return responseText;
         }
 
-        public IList<string> getDataByTagWithAttribute(string html, string tag, string attribute, string value)
+        public IList<string> GetDataByTagWithAttribute(string html, string tag, string attribute, string value)
         {
-            HtmlDocument doc = new HtmlDocument();
+            var doc = new HtmlDocument();
             doc.LoadHtml(html);
 
 
@@ -60,8 +72,8 @@ namespace VHostManager
                 findClasses = findClasses.Where(d => d.Attributes.Contains(attribute) && d.Attributes["class"].Value.Contains(value));
             }
 
-            string innerHTML = findClasses.ElementAt(1).InnerHtml;
-            doc.LoadHtml(innerHTML);
+            var innerHtml = findClasses.ElementAt(1).InnerHtml;
+            doc.LoadHtml(innerHtml);
             findClasses = doc.DocumentNode.Descendants("code");
             
             IList<string> elements = new List<string>();
@@ -70,14 +82,14 @@ namespace VHostManager
             return elements;
         }
 
-        public string[] splitByChar(string toSplit, char[] spliter)
+        public string[] SplitByChar(string toSplit, char[] spliter)
         {
             return toSplit.Split(spliter);
         }
 
-        public string[] splitByNewLines(string toSplit)
+        public string[] SplitByNewLines(string toSplit)
         {
-            var splited = toSplit.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
+            var splited = toSplit.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             return splited.Where(x => x != String.Empty).ToArray();
         }
     }

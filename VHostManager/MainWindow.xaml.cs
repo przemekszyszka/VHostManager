@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows;
 using MaxMind.GeoIP;
 using Microsoft.Win32;
@@ -14,8 +16,8 @@ namespace VHostManager
     /// </summary>
     public partial class MainWindow : Window
     {
-        private IList<Host> _testoweHosty; 
-        private IList<string> _restults;
+        private IList<Host> _testoweHosty1;
+        private IList<Host> _testoweHosty2; 
         private IList<string> _vHosts;
         private readonly LookupService _lService;
         private readonly LookupService _lServiceDomain;
@@ -27,29 +29,21 @@ namespace VHostManager
             var projectPath = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory()));
             _lService = new LookupService(projectPath + "/GeoIPDatabase/GeoLiteCity.dat", LookupService.GEOIP_STANDARD);
             _lServiceDomain = new LookupService(projectPath + "/GeoIPDatabase/GeoIPDomain.dat", LookupService.GEOIP_STANDARD);
-            _restults = new List<string>();
         }
 
-        private void ListCountries()
+        private void AdressesList()
         {
-            
-            if (_testoweHosty.Count < 1)
+
+            if (_testoweHosty1.Count < 1 || _testoweHosty2.Count < 1)
                 return;
 
             var sb = new StringBuilder("");
-
-            foreach (var host in _testoweHosty)
+            sb.Append("Wczytane adresy IP: \n\n");
+            foreach (var host in _testoweHosty1)
             {
 
                 var domainTxt = host.DomainName != null ? ", Domena: " + host.DomainName : "";
-                sb.Append("Adres IP: " + host.AdresIp + ", kraj: " + host.Country + domainTxt + "\n");
-            }
-
-            var lines = sb.ToString().Split('\n');
-            for (var i = 0; i < lines.Length; i += 1)
-            {
-                lines[i] = lines[i].TrimEnd('\n');
-                _restults.Add(lines[i]);
+                sb.Append(host.AdresIp + domainTxt + "\n");
             }
 
 
@@ -68,7 +62,8 @@ namespace VHostManager
                 return;
            
             var filename = dlg.FileName;
-            _testoweHosty = new List<Host>();
+            _testoweHosty1 = new List<Host>();
+            _testoweHosty2 = new List<Host>();
 
             try
             {
@@ -80,9 +75,16 @@ namespace VHostManager
                     for (var i = 0; i < lines.Length; i += 1)
                     {
                         lines[i] = lines[i].TrimEnd('\r');
-                        _testoweHosty.Add(new Host() 
+                        _testoweHosty1.Add(new Host
                         { 
                             AdresIp = lines[i], 
+                            DomainName = GetDomainName(lines[i]),
+                            Country = GetCountry(lines[i])
+                        });
+
+                        _testoweHosty2.Add(new Host
+                        {
+                            AdresIp = lines[i],
                             DomainName = GetDomainName(lines[i]),
                             Country = GetCountry(lines[i])
                         });
@@ -97,8 +99,8 @@ namespace VHostManager
                 Console.WriteLine(ex.Message);
             }
             
-            ListCountries();
-            if (_testoweHosty.Count > 0)
+            AdressesList();
+            if (_testoweHosty1.Count > 0 && _testoweHosty1.Count > 0)
                 BadaniaMenuItem.IsEnabled = true;
 
         }
@@ -114,51 +116,93 @@ namespace VHostManager
         }
 
 
-        private void zapisz_btn_click(object sender, RoutedEventArgs e)
-        {
-            var saveFileDlg = new SaveFileDialog
-            {
-                DefaultExt = ".txt",
-                Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*",
-                RestoreDirectory = true,
-                FileName = "result"
-            };
+        //private void zapisz_btn_click(object sender, RoutedEventArgs e)
+        //{
+        //    var saveFileDlg = new SaveFileDialog
+        //    {
+        //        DefaultExt = ".txt",
+        //        Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*",
+        //        RestoreDirectory = true,
+        //        FileName = "result"
+        //    };
 
            
-            if (saveFileDlg.ShowDialog() == true && saveFileDlg.FileName != "")
-            {
-                var sb = new StringBuilder("");
+        //    if (saveFileDlg.ShowDialog() == true && saveFileDlg.FileName != "")
+        //    {
+        //        var sb = new StringBuilder("");
 
-                foreach (var line in _restults)
-                {
-                    sb.Append(line + Environment.NewLine);
-                }
+        //        foreach (var line in _restults)
+        //        {
+        //            sb.Append(line + Environment.NewLine);
+        //        }
 
-                File.WriteAllText(saveFileDlg.FileName, sb.ToString());
-            }
-        }
+        //        File.WriteAllText(saveFileDlg.FileName, sb.ToString());
+        //    }
+        //}
+
 
         private void dane_ip_btn_click(object sender, RoutedEventArgs e)
         {
-            readFromFirstWebsite();
-            readFromSecondWebsite();
+            TxtResult.Text = "";
+            ProgressBarActivate();
+            using (var worker = new BackgroundWorker())
+            {
+                worker.WorkerReportsProgress = true;
+                worker.DoWork += worker_DoWork;
+                worker.ProgressChanged += worker_ProgressChanged;
+
+                worker.RunWorkerAsync();
+            }
+        }
+
+        private void worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            ProgressBar.Value = e.ProgressPercentage;
+
+            if (ProgressBar.Value >= 100)
+            {
+                ProgressBarDeactivate();
+                WynikiMenuItem.IsEnabled = true;
+            }
             
-            TxtResult.Text = TxtResult.Text + "\nBadanie skończone, można przejść do wyników";
-            WynikiMenuItem.IsEnabled = true;
+
         }
 
-        private void readFromFirstWebsite()
+        private void worker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            
+            var backgroundWorker = sender as BackgroundWorker;
+
+            if (backgroundWorker == null)
+                return;
+
+            Thread.Sleep(1000);
+            backgroundWorker.ReportProgress(10);
+            Thread.Sleep(1000);
+            backgroundWorker.ReportProgress(10);
+            ReadFromFirstWebsite();
+            backgroundWorker.ReportProgress(40);
+            ReadFromSecondWebsite();
+            backgroundWorker.ReportProgress(80);
+            Thread.Sleep(1000);
+            backgroundWorker.ReportProgress(100);
+
+           
+            
+        }
+
+        private void ReadFromFirstWebsite()
         {
             var reader = new WebPageReader();
 
-            foreach (var host in _testoweHosty)
+            foreach (var host in _testoweHosty1)
             {
-                _vHosts = reader.findVirtualHostsByIp(host.AdresIp);
+                _vHosts = reader.FindVirtualHostsByIp(host.AdresIp);
                 host.VirtualHosts = new List<Host>();
                 foreach (var vhost in _vHosts)
                 {
                     host.VirtualHosts.Add(
-                        new Host()
+                        new Host
                         {
                             AdresIp = host.AdresIp,
                             DomainName = vhost,
@@ -170,18 +214,18 @@ namespace VHostManager
             }
         }
 
-        private void readFromSecondWebsite()
+        private void ReadFromSecondWebsite()
         {
             var reader = new WebPageReader();
 
-            foreach (var host in _testoweHosty)
+            foreach (var host in _testoweHosty2)
             {
-                _vHosts = reader.findOtherVirtualHostsByIp(host.AdresIp);
+                _vHosts = reader.FindOtherVirtualHostsByIp(host.AdresIp);
                 host.VirtualHosts = new List<Host>();
                 foreach (var vhost in _vHosts)
                 {
                     host.VirtualHosts.Add(
-                        new Host()
+                        new Host
                         {
                             AdresIp = host.AdresIp,
                             DomainName = vhost,
@@ -191,70 +235,161 @@ namespace VHostManager
                 }
             }
         }
+
+        #region badania
 
         private void skala_wirtualizacji_click(object sender, RoutedEventArgs e)
         {
-            TxtResult.Text = "Średnia ilość adresów dns na jednego hosta: ";
+            AllChartCollapse();
+            if (_testoweHosty1.Count < 1 || _testoweHosty2.Count < 1)
+                return;
 
-            var liczbaVhostow = _testoweHosty.Select(host => host.VirtualHosts.Count).ToList();
-            var result = liczbaVhostow.AsEnumerable().Average(o => o);
+            var liczbaVhostow1 = _testoweHosty1.Select(host => host.VirtualHosts.Count).ToList();
+            var result1 = liczbaVhostow1.AsEnumerable().Average(o => o);
 
-            TxtResult.Text = TxtResult.Text + result;
+            var liczbaVhostow2 = _testoweHosty2.Select(host => host.VirtualHosts.Count).ToList();
+            var result2 = liczbaVhostow2.AsEnumerable().Average(o => o);
 
+            var valueList = new List<KeyValuePair<string, int>>
+            {
+                new KeyValuePair<string, int>("1 narzędzie", Convert.ToInt32(result1)),
+                new KeyValuePair<string, int>("2 narzędzie", Convert.ToInt32(result2))
+            };
+
+            ShowChart(valueList, "Średnia ilość adresów dns na jednego hosta", "Średnia wartość", ChartEnum.ColumnChart1);
         }
 
         private void najwieksza_wirtualizacja_click(object sender, RoutedEventArgs e)
         {
-            TxtResult.Text = "Hosty o najwiekszej wirtualizacji:\n\n\n";
+            AllChartCollapse();
 
-            var sb = new StringBuilder("");
+            if (_testoweHosty1.Count < 1 || _testoweHosty2.Count < 1)
+                return;
 
-            var najVirtHosts = _testoweHosty.OrderByDescending(x => x.VirtualHosts.Count).Take(3);
-            var valueList = new List<KeyValuePair<string, int>>();
-            foreach (var host in najVirtHosts)
-            {
-                var domainTxt = host.DomainName != null ? ", Domena: " + host.DomainName : "";
-                sb.Append("Adres IP: " + host.AdresIp + domainTxt + "\n");
-                sb.Append("Liczba writualnych hostów: " + host.VirtualHosts.Count + "\n\n");
-                valueList.Add(new KeyValuePair<string, int>(host.DomainName, host.VirtualHosts.Count));
-            }
+            var najVirtHosts1 = _testoweHosty1.OrderByDescending(x => x.VirtualHosts.Count).Take(3);
+            var najVirtHosts2 = _testoweHosty2.OrderByDescending(x => x.VirtualHosts.Count).Take(3);
 
-            TxtResult.Text = TxtResult.Text + sb;
-            ShowColumnChart(valueList, "Hosty o najwiekszej wirtualizacji", "Liczba vhostów");
+            var valueList1 = najVirtHosts1.Select(host => new KeyValuePair<string, int>(host.DomainName, host.VirtualHosts.Count)).ToList();
+            var valueList2 = najVirtHosts2.Select(host => new KeyValuePair<string, int>(host.DomainName, host.VirtualHosts.Count)).ToList();
+
+            ShowChart(valueList1, "Hosty o najwiekszej wirtualizacji 1 narzedzie", "Liczba vhostów", ChartEnum.ColumnChart1);
+            ShowChart(valueList2, "Hosty o najwiekszej wirtualizacji 2 narzedzie", "Liczba vhostów", ChartEnum.ColumnChart2);
         }
 
         private void lista_wszystkich_click(object sender, RoutedEventArgs e)
         {
-            TxtResult.Text = "Lista wszystkich znalezionych:\n\n\n";
+            AllChartCollapse();
 
-            var sb = new StringBuilder("");
-            var valueList = new List<KeyValuePair<string, int>>();
-            foreach (var host in _testoweHosty)
+            if (_testoweHosty1.Count < 1 || _testoweHosty2.Count < 1)
+                return;
+
+            var valueList1 = _testoweHosty1.Select(host => new KeyValuePair<string, int>(host.DomainName, host.VirtualHosts.Count)).ToList();
+            var valueList2 = _testoweHosty2.Select(host => new KeyValuePair<string, int>(host.DomainName, host.VirtualHosts.Count)).ToList();
+
+            ShowChart(valueList1, "Znalezione wirtualne hosty 1 narzędzie", "Liczba vhostów", ChartEnum.PieChart1);
+            ShowChart(valueList2, "Znalezione wirtualne hosty 2 narzędzie", "Liczba vhostów", ChartEnum.PieChart2);
+        }
+
+        private void rozlozenie_geo_click(object sender, RoutedEventArgs e)
+        {
+            AllChartCollapse();
+
+            if (_testoweHosty1.Count < 1)
+                return;
+
+            var valueList1 = _testoweHosty1.Select(host => new KeyValuePair<string, int>(host.Country, _testoweHosty1.Count)).ToList();
+
+            var groupedHosts = from c in valueList1
+                       group c by c.Key into grouped
+                       select new CountryCount
+                       {
+                           Key = grouped.Key,
+                           Value = grouped.Count()
+                       }.ToKeyValuePair();
+
+            ShowChart(groupedHosts.ToList(), "Rozłożenie geograficzne", "Państwa", ChartEnum.PieChart1);
+        }
+
+        #endregion
+
+        #region charts
+
+        private void ShowChart(List<KeyValuePair<string, int>> valueList, string chartTitle, string columnSeriesTitle, ChartEnum chart)
+        {
+            switch (chart)
             {
-                var domainTxt = host.DomainName != null ? ", Domena: " + host.DomainName : "";
-                sb.Append("Adres IP: " + host.AdresIp + domainTxt + "\n");
-                sb.Append("Liczba writualnych hostów: " + host.VirtualHosts.Count + "\n\n");
-                valueList.Add(new KeyValuePair<string, int>(host.DomainName, host.VirtualHosts.Count));
+                case ChartEnum.ColumnChart1:
+                {
+                    ColumnChart1.DataContext = null;
+                    ColumnChart1.DataContext = valueList;
+                    ColumnChart1.Title = chartTitle;
+                    ColumnSeries1.Title = columnSeriesTitle;
+                    ColumnChart1.Visibility = Visibility.Visible;
+                    break;
+                }
+                case ChartEnum.ColumnChart2:
+                {
+                    ColumnChart2.DataContext = null;
+                    ColumnChart2.DataContext = valueList;
+                    ColumnChart2.Title = chartTitle;
+                    ColumnSeries2.Title = columnSeriesTitle;
+                    ColumnChart2.Visibility = Visibility.Visible;
+                    break;
+                }
+                case ChartEnum.PieChart1:
+                {
+                    PieChart1.DataContext = null;
+                    PieChart1.DataContext = valueList;
+                    PieChart1.Title = chartTitle;
+                    PieSeries1.Title = columnSeriesTitle;
+                    PieChart1.Visibility = Visibility.Visible; 
+                    break;
+                }
+                case ChartEnum.PieChart2:
+                {
+                    PieChart2.DataContext = null;
+                    PieChart2.DataContext = valueList;
+                    PieChart2.Title = chartTitle;
+                    PieSeries2.Title = columnSeriesTitle;
+                    PieChart2.Visibility = Visibility.Visible;
+                    break;
+                }
+
             }
-
-            TxtResult.Text = TxtResult.Text + sb;
-            ShowPieChart(valueList, "Znalezione wirtualne hosty", "Liczba vhostów");
+            
         }
-
-        private void ShowColumnChart(List<KeyValuePair<string, int>> valueList, string chartTitle, string columnSeriesTitle)
+        
+        private void AllChartCollapse()
         {
-            ColumnChart.DataContext = valueList;
-            ColumnChart.Title = chartTitle;
-            ColumnSeries.Title = columnSeriesTitle;
-            ColumnChart.Visibility = Visibility.Visible;
+            TxtResult.Text = "";
+            ProgressTxt.Visibility = Visibility.Collapsed;
+            ColumnChart1.Visibility = Visibility.Collapsed;
+            ColumnChart2.Visibility = Visibility.Collapsed;
+            PieChart1.Visibility = Visibility.Collapsed;
+            PieChart2.Visibility = Visibility.Collapsed;
         }
 
-        private void ShowPieChart(List<KeyValuePair<string, int>> valueList, string chartTitle, string columnSeriesTitle)
+        #endregion
+
+        #region progressBar
+        private void ProgressBarActivate()
         {
-            PieChart.DataContext = valueList;
-            PieChart.Title = chartTitle;
-            PieSeries.Title = columnSeriesTitle;
-            PieChart.Visibility = Visibility.Visible; 
+
+            ProgressBar.Visibility = Visibility.Visible;
+            ProgressTxt.Visibility = Visibility.Visible;
+            ProgressTxt.Text = "Trwa wykrywanie wirtualnych hostów, proszę czekać.";
+
         }
+
+        private void ProgressBarDeactivate()
+        {
+            ProgressBar.Visibility = Visibility.Collapsed;
+            ProgressTxt.Text = "Badanie skończone, można przejść do wyników.";
+        }
+
+        #endregion
+
     }
+
+    
 }

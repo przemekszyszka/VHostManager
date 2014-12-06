@@ -43,10 +43,12 @@ namespace VHostManager
             {
 
                 var domainTxt = host.DomainName != null ? ", Domena: " + host.DomainName : "";
-                sb.Append(host.AdresIp + domainTxt + "\n");
+                sb.Append(host.AdresIp + domainTxt + ", kraj "+ host.Country + "\n");
             }
 
-
+            AllChartCollapse();
+            WynikiMenuItem.IsEnabled = false;
+            BadaniaMenuItem.IsEnabled = false;
             TxtResult.Text = sb.ToString();
 
         }
@@ -143,6 +145,8 @@ namespace VHostManager
 
         private void dane_ip_btn_click(object sender, RoutedEventArgs e)
         {
+            AllChartCollapse();
+            WynikiMenuItem.IsEnabled = false;
             TxtResult.Text = "";
             ProgressBarActivate();
             using (var worker = new BackgroundWorker())

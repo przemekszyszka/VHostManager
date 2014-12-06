@@ -72,10 +72,10 @@ namespace VHostManager
                 findClasses = findClasses.Where(d => d.Attributes.Contains(attribute) && d.Attributes["class"].Value.Contains(value));
             }
 
-            var innerHtml = findClasses.ElementAt(1).InnerHtml;
-            doc.LoadHtml(innerHtml);
+            string innerHTML = findClasses.ElementAt(1).InnerHtml;
+            doc.LoadHtml(innerHTML);
             findClasses = doc.DocumentNode.Descendants("code");
-            
+
             IList<string> elements = new List<string>();
             findClasses.ToList().ForEach(x => elements.Add(x.InnerText));
 

@@ -9,6 +9,7 @@
             <Menu DockPanel.Dock="Top">
                 <MenuItem Header="_Plik">
                     <MenuItem Header="_Wczytaj Plik" Click="wczytaj_btn_click"/>
+                    <MenuItem x:Name="ZapiszBtn" Header="_Zapisz Wyniki" Click="zapisz_btn_click" IsEnabled="False" />
                 </MenuItem>
                 <MenuItem x:Name="BadaniaMenuItem" Header="_Badania" IsEnabled="false">
                     <MenuItem Header="_Rozpocznij Badania" Click="dane_ip_btn_click"/>
@@ -32,22 +33,38 @@
                             <chartingToolkit:Chart 
                         x:Name="ColumnChart1" 
                         Visibility="Collapsed" 
-                        Height="200" 
+                        Height="250" 
                         HorizontalAlignment="Center" 
 		                Margin="0,0,0,20" 
 		                VerticalAlignment="Top" 
                         Width="450">
-
                                 <chartingToolkit:ColumnSeries x:Name="ColumnSeries1" 
                             DependentValuePath="Value" 
 		                    IndependentValuePath="Key" 
-                            ItemsSource="{Binding}"/>
+                            ItemsSource="{Binding}">
+                                    <chartingToolkit:ColumnSeries.DataPointStyle>
+                                        <Style TargetType="chartingToolkit:ColumnDataPoint">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="chartingToolkit:ColumnDataPoint">
+                                                        <Grid>
+                                                            <Rectangle Fill="{TemplateBinding Background}" Stroke="Black"/>
+                                                            <Grid Margin="0 -15 0 0" HorizontalAlignment="Center" VerticalAlignment="Top">
+                                                                <TextBlock FontSize="10" Text="{TemplateBinding FormattedDependentValue}" Margin="2"/>
+                                                            </Grid>
+                                                        </Grid>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </chartingToolkit:ColumnSeries.DataPointStyle>
+                                </chartingToolkit:ColumnSeries>
                             </chartingToolkit:Chart>
 
                             <chartingToolkit:Chart 
                         x:Name="ColumnChart2" 
                         Visibility="Collapsed" 
-                        Height="200" 
+                        Height="250" 
                         HorizontalAlignment="Center" 
 		                VerticalAlignment="Top" 
                         Width="450">
@@ -55,7 +72,24 @@
                                 <chartingToolkit:ColumnSeries x:Name="ColumnSeries2" 
                             DependentValuePath="Value" 
 		                    IndependentValuePath="Key" 
-                            ItemsSource="{Binding}"/>
+                            ItemsSource="{Binding}">
+                                    <chartingToolkit:ColumnSeries.DataPointStyle>
+                                        <Style TargetType="chartingToolkit:ColumnDataPoint">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="chartingToolkit:ColumnDataPoint">
+                                                        <Grid>
+                                                            <Rectangle Fill="{TemplateBinding Background}" Stroke="Black"/>
+                                                            <Grid Margin="0 -15 0 0" HorizontalAlignment="Center" VerticalAlignment="Top">
+                                                                <TextBlock FontSize="10" Text="{TemplateBinding FormattedDependentValue}" Margin="2"/>
+                                                            </Grid>
+                                                        </Grid>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </chartingToolkit:ColumnSeries.DataPointStyle>
+                                </chartingToolkit:ColumnSeries>
                             </chartingToolkit:Chart>
 
                         </StackPanel>

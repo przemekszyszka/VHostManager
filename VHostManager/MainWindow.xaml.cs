@@ -29,6 +29,9 @@ namespace VHostManager
             var projectPath = Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory()));
             _lService = new LookupService(projectPath + "/GeoIPDatabase/GeoLiteCity.dat", LookupService.GEOIP_STANDARD);
             _lServiceDomain = new LookupService(projectPath + "/GeoIPDatabase/GeoIPDomain.dat", LookupService.GEOIP_STANDARD);
+            ProgressTxt.Text = "Wczytaj plik z adresami IP, aby rozpocząć badanie.";
+            ProgressTxt.Visibility = Visibility.Visible;
+           
         }
 
         private void AdressesList()
@@ -43,11 +46,12 @@ namespace VHostManager
             {
 
                 var domainTxt = host.DomainName != null ? ", Domena: " + host.DomainName : "";
-                sb.Append(host.AdresIp + domainTxt + ", kraj "+ host.Country + "\n");
+                sb.Append(host.AdresIp + domainTxt + /*", kraj "+ host.Country +*/ "\n");
             }
 
             AllChartCollapse();
             WynikiMenuItem.IsEnabled = false;
+            ZapiszBtn.IsEnabled = false;
             BadaniaMenuItem.IsEnabled = false;
             TxtResult.Text = sb.ToString();
 
@@ -100,10 +104,12 @@ namespace VHostManager
                 Console.WriteLine("Problem z odczytaniem pliku.");
                 Console.WriteLine(ex.Message);
             }
-            
+            ProgressTxt.Visibility = Visibility.Collapsed;
             AdressesList();
             if (_testoweHosty1.Count > 0 && _testoweHosty1.Count > 0)
-                BadaniaMenuItem.IsEnabled = true;
+               BadaniaMenuItem.IsEnabled = true;
+          
+            
 
         }
 
@@ -118,29 +124,29 @@ namespace VHostManager
         }
 
 
-        //private void zapisz_btn_click(object sender, RoutedEventArgs e)
-        //{
-        //    var saveFileDlg = new SaveFileDialog
-        //    {
-        //        DefaultExt = ".txt",
-        //        Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*",
-        //        RestoreDirectory = true,
-        //        FileName = "result"
-        //    };
+        private void zapisz_btn_click(object sender, RoutedEventArgs e)
+        {
+            var saveFileDlg = new SaveFileDialog
+            {
+                DefaultExt = ".txt",
+                Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*",
+                RestoreDirectory = true,
+                FileName = "result"
+            };
 
-           
-        //    if (saveFileDlg.ShowDialog() == true && saveFileDlg.FileName != "")
-        //    {
-        //        var sb = new StringBuilder("");
 
-        //        foreach (var line in _restults)
-        //        {
-        //            sb.Append(line + Environment.NewLine);
-        //        }
+            if (saveFileDlg.ShowDialog() == true && saveFileDlg.FileName != "")
+            {
+                var sb = new StringBuilder("");
 
-        //        File.WriteAllText(saveFileDlg.FileName, sb.ToString());
-        //    }
-        //}
+                //foreach (var line in _restults)
+                //{
+                //    sb.Append(line + Environment.NewLine);
+                //}
+
+                File.WriteAllText(saveFileDlg.FileName, sb.ToString());
+            }
+        }
 
 
         private void dane_ip_btn_click(object sender, RoutedEventArgs e)
@@ -167,6 +173,7 @@ namespace VHostManager
             {
                 ProgressBarDeactivate();
                 WynikiMenuItem.IsEnabled = true;
+                ZapiszBtn.IsEnabled = true;
             }
             
 

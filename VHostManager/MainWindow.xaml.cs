@@ -31,7 +31,7 @@ namespace VHostManager
             _lServiceDomain = new LookupService(projectPath + "/GeoIPDatabase/GeoIPDomain.dat", LookupService.GEOIP_STANDARD);
             ProgressTxt.Text = "Wczytaj plik z adresami IP, aby rozpocząć badanie.";
             ProgressTxt.Visibility = Visibility.Visible;
-           
+
         }
 
         private void AdressesList()
@@ -46,7 +46,7 @@ namespace VHostManager
             {
 
                 var domainTxt = host.DomainName != null ? ", Domena: " + host.DomainName : "";
-                sb.Append(host.AdresIp + domainTxt + /*", kraj "+ host.Country +*/ "\n");
+                sb.Append(host.AdresIp + domainTxt + "\n");
             }
 
             AllChartCollapse();
@@ -85,14 +85,16 @@ namespace VHostManager
                         { 
                             AdresIp = lines[i], 
                             DomainName = GetDomainName(lines[i]),
-                            Country = GetCountry(lines[i])
+                            Country = GetCountry(lines[i]),
+                            VirtualHosts = new List<Host>()
                         });
 
                         _testoweHosty2.Add(new Host
                         {
                             AdresIp = lines[i],
                             DomainName = GetDomainName(lines[i]),
-                            Country = GetCountry(lines[i])
+                            Country = GetCountry(lines[i]),
+                            VirtualHosts = new List<Host>()
                         });
                     }
                        
@@ -137,12 +139,24 @@ namespace VHostManager
 
             if (saveFileDlg.ShowDialog() == true && saveFileDlg.FileName != "")
             {
-                var sb = new StringBuilder("");
-
-                //foreach (var line in _restults)
-                //{
-                //    sb.Append(line + Environment.NewLine);
-                //}
+                var sb = new StringBuilder("Wyniki badań 1 narzędzia:");
+                sb.Append(Environment.NewLine);
+                sb.Append(Environment.NewLine);
+                foreach (var host in _testoweHosty1)
+                {
+                    sb.Append(host.AdresIp + ": "+ host.VirtualHosts.Count);
+                    sb.Append(Environment.NewLine);
+                }
+                sb.Append(Environment.NewLine);
+                sb.Append("Wyniki badań 2 narzędzia:");
+                sb.Append(Environment.NewLine);
+                sb.Append(Environment.NewLine);
+                foreach (var host in _testoweHosty2)
+                {
+                    sb.Append(host.AdresIp + ": " + host.VirtualHosts.Count);
+                    sb.Append(Environment.NewLine);
+                }
+                
 
                 File.WriteAllText(saveFileDlg.FileName, sb.ToString());
             }
@@ -209,7 +223,7 @@ namespace VHostManager
             foreach (var host in _testoweHosty1)
             {
                 _vHosts = reader.FindVirtualHostsByIp(host.AdresIp);
-                host.VirtualHosts = new List<Host>();
+
                 foreach (var vhost in _vHosts)
                 {
                     host.VirtualHosts.Add(
@@ -232,7 +246,7 @@ namespace VHostManager
             foreach (var host in _testoweHosty2)
             {
                 _vHosts = reader.FindOtherVirtualHostsByIp(host.AdresIp);
-                host.VirtualHosts = new List<Host>();
+
                 foreach (var vhost in _vHosts)
                 {
                     host.VirtualHosts.Add(
@@ -247,7 +261,7 @@ namespace VHostManager
             }
         }
 
-        #region badania
+        #region statystyki
 
         private void skala_wirtualizacji_click(object sender, RoutedEventArgs e)
         {

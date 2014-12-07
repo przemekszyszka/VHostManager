@@ -9,7 +9,7 @@ using System.Windows;
 using MaxMind.GeoIP;
 using Microsoft.Win32;
 
-namespace VHostManager
+namespace VHostDetector
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
